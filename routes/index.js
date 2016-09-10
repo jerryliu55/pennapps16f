@@ -3,6 +3,8 @@ var router = express.Router();
 var users = require('./users')
 var books = require('./books')
 var loans = require('./loans')
+var mongoose = require('mongoose')
+
 
 // users
 router.get('/api/users', users.get)
@@ -27,10 +29,5 @@ router.get('/api/loans', loans.get)
 router.post('/api/loans', loans.post)
 router.get('/api/loans/:loan_id', loans.get_by_id)
 router.delete('/api/loans/:loan_id', loans.delete)
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
 
 module.exports = router;

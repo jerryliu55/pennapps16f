@@ -4,9 +4,9 @@ var request = require('request')
 var User = require('../models/user')
 var mongo = require('mongodb')
 var mongoose = require('mongoose')
+var async = require('async')
 
 mongoose.Promise = global.Promise
-mongoose.connect('mongodb://localhost:27017/test')
 
 var users = {
 	get: function(req, res) {
@@ -164,14 +164,28 @@ var users = {
 			_id: user_id
 		}, {limit: 1}).toArray((err, docs) => {
 			if (docs.length !== 0) {
-				console.log(docs)
 				db.collection('books').find({
 					'owner': {$in: docs[0].friends}
 				}).toArray((err, books) => {
 					if (err) {
 						res.status(500).send(err)
 					} else {
-						res.send(books)
+						async.map(books, (book, callback) => {
+							var book_owner = new mongo.ObjectId(book.owner)
+							db.collection('users').find({_id: book_owner}, {
+								limit: 1,
+								fields: ['email', 'first_name', 'last_name']
+							}).toArray((err, docs) => {
+								book.owner_info = docs[0]
+								callback(null, book)
+							})
+						}, (err, result) => {
+							if (err) {
+								res.status(500).send(err)
+							} else {
+								res.send(books)
+							}
+						})						
 					}
 				})
 			} else {
