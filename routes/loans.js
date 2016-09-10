@@ -6,8 +6,8 @@ var mongo = require('mongodb')
 
 mongoose.Promise = global.Promise
 
-var functions = {
-  get_loans: function(req, res) {
+var loans = {
+  get: function(req, res) {
     var db = req.db;
 
 		db.collection('loans').find({}).toArray(function(e, docs){
@@ -18,7 +18,7 @@ var functions = {
 			}
 	  });
   },
-	post_loan: function(req, res) {
+	post: function(req, res) {
 		var db = req.db;
 
 		var newLoan = Loan({
@@ -31,11 +31,21 @@ var functions = {
 			if (err) {
 				res.status(500).send(err)
 			} else {
-				res.send('created')
+				db.collection('books').update({
+					_id: req.body.book_id
+				},
+				{$set: {'available': false}},
+				(err, data) => {
+					if (err, data) {
+						res.status(500).send(err)
+					} else {
+						res.send('book checked out')
+					}
+				})
 			}
 		})
 	},
-	get_loan_by_id: function(req, res) {
+	get_by_id: function(req, res) {
 		var db = req.db;
 		var loan_id = new mongo.ObjectId(req.params.loan_id)
 
@@ -52,7 +62,7 @@ var functions = {
 			}
 	  });
 	},
-	delete_loan: function(req, res) {
+	delete: function(req, res) {
 		var db = req.db;
 		var loan_id = new mongo.ObjectId(req.params.loan_id)
 
@@ -62,15 +72,21 @@ var functions = {
 			if (err) {
 				res.status(500).send(err)
 			} else {
+				db.collection('books').update({
+					_id: req.body.book_id
+				},
+				{$set: {'available': true}},
+				(err, data) => {
+					if (err, data) {
+						res.status(500).send(err)
+					} else {
+						res.send('book available')
+					}
+				})
 				res.send(result)
 			}
 		})
 	}
 }
 
-router.get('/', functions.get_loans)
-router.post('/', functions.post_loan)
-router.get('/:loan_id', functions.get_loan_by_id)
-router.delete('/:loan_id', functions.delete_loan)
-
-module.exports = router
+module.exports = loans
