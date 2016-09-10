@@ -1,5 +1,5 @@
 var express = require('express');
-var router = express.Router({mergeParams: true});
+var router = express.Router();
 var Book = require('../models/book')
 var mongo = require('mongodb')
 var mongoose = require('mongoose')
