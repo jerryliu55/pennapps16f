@@ -19,11 +19,13 @@ var loans = {
 	  });
   },
 	post: function(req, res) {
-		var db = req.db;
+		var db = req.db
+		var book_id = new mongo.ObjectId(req.body.book_id)
+		var borrower = new mongo.ObjectId(req.body.borrower)
 
 		var newLoan = Loan({
-			book_id: req.body.book_id,
-			borrower: req.body.borrower,
+			book_id: book_id,
+			borrower: borrower,
 			borrowed_on: Date.now()
 		})
 
@@ -32,14 +34,14 @@ var loans = {
 				res.status(500).send(err)
 			} else {
 				db.collection('books').update({
-					_id: req.body.book_id
+					_id: book_id
 				},
 				{$set: {'available': false}},
 				(err, data) => {
-					if (err, data) {
+					if (err) {
 						res.status(500).send(err)
 					} else {
-						res.send('book checked out')
+						res.send('ok')
 					}
 				})
 			}
@@ -66,24 +68,24 @@ var loans = {
 		var db = req.db;
 		var loan_id = new mongo.ObjectId(req.params.loan_id)
 
-		db.collection('loans').remove({
+		db.collection('loans').find({
 			_id: loan_id
-		}, (err, result) => {
+		}, {limit:1}).toArray((err, docs) => {
 			if (err) {
 				res.status(500).send(err)
 			} else {
+				var book_id = new mongo.ObjectId(docs[0].book_id)
 				db.collection('books').update({
-					_id: req.body.book_id
+					_id: book_id
 				},
 				{$set: {'available': true}},
 				(err, data) => {
-					if (err, data) {
+					if (err) {
 						res.status(500).send(err)
 					} else {
 						res.send('book available')
 					}
 				})
-				res.send(result)
 			}
 		})
 	}
