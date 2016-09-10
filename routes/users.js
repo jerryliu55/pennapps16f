@@ -110,22 +110,23 @@ var users = {
 
 		if (req.body.hasOwnProperty('friend_id')) {
 			var friend_id = new mongo.ObjectId(req.body.friend_id)
-			db.collection('users').find({
-				_id: friend_id
-			}, {limit: 1}, (err, doc) => {
+			db.collection('users').update({_id: friend_id,},
+				{$push: { 'friends' : user_id }}, // add one way
+				{upsert: true},
+				(err, data) => {
 				if (err) {
 					res.status(404).send(err)
 				} else {
 					db.collection('users').update({
 						_id: user_id
 					},
-					{$push: { 'friends' : friend_id }},
+					{$push: { 'friends' : friend_id }}, // add the other way
 					{upsert: true},
-					function(err, data) {
+					function(err) {
 						if (err) {
 							res.sendStatus(500)
 						} else {
-							res.send('friend added')
+							res.send('ok')
 						}
 					})
 				}
@@ -133,6 +134,27 @@ var users = {
 		} else {
 			res.sendStatus(400)
 		}
+	},
+	delete_friend: function(req, res) {
+		var db = req.db
+		var user_id = new mongo.ObjectId(req.params.user_id)
+		var friend_id = new mongo.ObjectId(req.params.friend_id)
+
+		User.update({_id: req.params.user_id},
+		{$pull: {'friends': friend_id}}, (err, data) => {
+			if (err) {
+				res.status(500).send(err)
+			} else {
+				User.update({_id: req.params.friend_id},
+				{$pull: {'friends': user_id}}, (err, data) => {
+					if (err) {
+						res.status(500).send(err)
+					} else {
+						res.send('ok')
+					}
+				})
+			}
+		})
 	},
 	get_catalogue: function(req, res) {
 		var db = req.db
