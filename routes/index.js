@@ -12,6 +12,7 @@ router.delete('/api/users/:user_id', users.delete)
 router.get('/api/users/:user_id/books', users.get_books)
 router.get('/api/users/:user_id/friends', users.get_friends)
 router.post('/api/users/:user_id/friends', users.post_friend)
+router.delete('/api/users/:user_id/friends/:friend_id', users.delete_friend)
 router.get('/api/users/:user_id/catalogue', users.get_catalogue)
 
 
