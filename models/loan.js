@@ -5,9 +5,8 @@ var ObjectId = require('mongodb').ObjectID
 
 // create a schema
 var loan = new Schema({
-  book_id: [{ type : ObjectId, ref: 'Book' }],
-  owner: [{ type : ObjectId, ref: 'User' }],
-  borrower: [{ type : ObjectId, ref: 'User' }],
+  book_id: { type : mongoose.Schema.Types.ObjectId, ref: 'Book', required: true },
+  borrower: { type : mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   borrowed_on: Date
 })
 
