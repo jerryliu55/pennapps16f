@@ -11,7 +11,9 @@ var functions = {
 	get_users: function(req, res) {
 	  var db = req.db;
 
-		db.collection('users').find({}, {}).toArray(function(e, docs){
+		db.collection('users').find({}, {
+			fields: ['_id', 'email', 'first_name', 'last_name']
+		}).toArray(function(e, docs){
 			if (e) {
 				res.sendStatus(400)
 			} else {
@@ -89,6 +91,8 @@ var functions = {
 				var friendIds = doc.friends
 				db.collection('users').find({
 					_id: {$in: friendIds}
+				}, {
+					fields: ['_id', 'email', 'first_name', 'last_name']
 				}).toArray(function(e, docs) {
 					if (e) {
 						res.status(500).send('invalid user')
@@ -151,17 +155,30 @@ var functions = {
 				res.sendStatus(404)
 			}
 		})
+	},
+	delete_user: function(req, res) {
+		var db = req.db;
+		var user_id = new mongo.ObjectId(req.params.user_id)
 
-
+		db.collection('users').remove({
+			_id: user_id
+		}, (err, result) => {
+			if (err) {
+				res.status(500).send(err)
+			} else {
+				res.send(result)
+			}
+		})
 	}
 }
 
-router.get('/', functions.get_users);
+router.get('/', functions.get_users)
 router.post('/', functions.post_user)
-router.get('/:user_id', functions.get_user_by_id);
+router.get('/:user_id', functions.get_user_by_id)
+router.delete('/:user_id', functions.delet_user)
 router.get('/:user_id/books', functions.get_user_books)
 router.get('/:user_id/friends', functions.get_user_friends)
 router.post('/:user_id/friends', functions.post_user_friend)
 router.get('/:user_id/catalogue', functions.get_user_catalogue)
 
-module.exports = router;
+module.exports = router
