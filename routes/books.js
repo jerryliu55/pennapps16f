@@ -6,8 +6,8 @@ var mongoose = require('mongoose')
 
 mongoose.Promise = global.Promise
 
-var functions = {
-  get_books: function(req, res) {
+var books = {
+  get: function(req, res) {
     var db = req.db
 
     db.collection('books').find({}).toArray(function(e, docs){
@@ -19,7 +19,7 @@ var functions = {
   		}
     });
   },
-  get_book_by_id: function(req, res) {
+  get_by_id: function(req, res) {
 		var db = req.db;
 		var book_id = new mongo.ObjectId(req.params.book_id)
 
@@ -36,7 +36,7 @@ var functions = {
 			}
 	  });
 	},
-  post_book: function(req, res) {
+  post: function(req, res) {
     var db = req.db
     // check request has owner property and that it is a valid user
     if (req.body.hasOwnProperty('owner')) {
@@ -52,6 +52,7 @@ var functions = {
         	  title: req.body.title,
         	  author: req.body.author,
         		owner: objectId,
+            available: true,
         		added: Date.now()
         	});
 
@@ -70,7 +71,8 @@ var functions = {
       res.sendStatus(400)
     }
   },
-  delete_book: function(req, res) {
+  delete: function(req, res) {
+    var self_url = req.protocol + '://' + req.get('host')
 		var db = req.db;
 		var book_id = new mongo.ObjectId(req.params.book_id)
 
@@ -80,15 +82,18 @@ var functions = {
 			if (err) {
 				res.status(500).send(err)
 			} else {
-				res.send(result)
+        db.collection('loans').remove({
+					book_id: book_id
+				}, (err, data) => {
+					if (err) {
+						res.status(500).send(err)
+					} else {
+						res.send('ok')
+					}
+				})
 			}
 		})
 	}
 }
 
-router.get('/', functions.get_books)
-router.post('/', functions.post_book)
-router.get('/:book_id', functions.get_book_by_id)
-router.delete('/:book_id', functions.delete_book)
-
-module.exports = router
+module.exports = books

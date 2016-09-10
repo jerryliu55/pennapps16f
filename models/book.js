@@ -7,7 +7,8 @@ var Schema = mongoose.Schema
 var book = new Schema({
   title: {type: String, required: true},
   author: {type: String, required: true},
-  owner: { type : mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  owner: {type : mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
+  available: {type: Boolean, required: true},
   added: Date
 })
 

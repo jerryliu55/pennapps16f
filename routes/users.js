@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var request = require('request')
 var User = require('../models/user')
 var mongo = require('mongodb')
 var mongoose = require('mongoose')
@@ -7,8 +8,8 @@ var mongoose = require('mongoose')
 mongoose.Promise = global.Promise
 mongoose.connect('mongodb://localhost:27017/test')
 
-var functions = {
-	get_users: function(req, res) {
+var users = {
+	get: function(req, res) {
 	  var db = req.db;
 
 		db.collection('users').find({}, {
@@ -21,7 +22,7 @@ var functions = {
 			}
 	  });
 	},
-	get_user_by_id: function(req, res) {
+	get_by_id: function(req, res) {
 	  var db = req.db;
 
 		db.collection('users').findOne({
@@ -34,7 +35,7 @@ var functions = {
 			}
 	  });
 	},
-	post_user: function (req, res) {
+	post: function (req, res) {
 		// create a new user
 		var newUser = new User({
 		  email: req.body.email,
@@ -47,7 +48,7 @@ var functions = {
 
 		newUser.save((err, doc) => {
 			if (err) {
-				res.send(err).status(500)
+				res.status(500).send(err)
 			} else {
 				res.send('created')
 			}
@@ -56,7 +57,7 @@ var functions = {
 		// 	res.sendStatus(400)
 		// })
 	},
-	get_user_books: function(req, res) {
+	get_books: function(req, res) {
 		var db = req.db
 		var objectId = new mongo.ObjectId(req.params.user_id)
 
@@ -78,7 +79,7 @@ var functions = {
 			}
 	  })
 	},
-	get_user_friends: function(req, res) {
+	get_friends: function(req, res) {
 		var db = req.db
 		var user_id = new mongo.ObjectId(req.params.user_id)
 
@@ -103,7 +104,7 @@ var functions = {
 			}
 		})
 	},
-	post_user_friend: function(req, res) {
+	post_friend: function(req, res) {
 		var db = req.db
 		var user_id = new mongo.ObjectId(req.params.user_id)
 
@@ -133,7 +134,7 @@ var functions = {
 			res.sendStatus(400)
 		}
 	},
-	get_user_catalogue: function(req, res) {
+	get_catalogue: function(req, res) {
 		var db = req.db
 		var user_id = new mongo.ObjectId(req.params.user_id)
 
@@ -156,7 +157,8 @@ var functions = {
 			}
 		})
 	},
-	delete_user: function(req, res) {
+	delete: function(req, res) {
+		var self_url = req.protocol + '://' + req.get('host')
 		var db = req.db;
 		var user_id = new mongo.ObjectId(req.params.user_id)
 
@@ -166,19 +168,21 @@ var functions = {
 			if (err) {
 				res.status(500).send(err)
 			} else {
-				res.send(result)
+				db.collection('books').find({
+					owner: user_id
+				}, {fields: ['_id']}, (err, docs) => {
+					if (err) {
+						res.status(500).send(err)
+					} else {
+						docs.forEach((doc) => {
+							request.delete(self_url + '/api/books/' + doc._id)
+						})
+						res.send('ok')
+					}
+				})
 			}
 		})
 	}
 }
 
-router.get('/', functions.get_users)
-router.post('/', functions.post_user)
-router.get('/:user_id', functions.get_user_by_id)
-router.delete('/:user_id', functions.delet_user)
-router.get('/:user_id/books', functions.get_user_books)
-router.get('/:user_id/friends', functions.get_user_friends)
-router.post('/:user_id/friends', functions.post_user_friend)
-router.get('/:user_id/catalogue', functions.get_user_catalogue)
-
-module.exports = router
+module.exports = users
