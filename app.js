@@ -5,12 +5,31 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var mongo = require('mongo');
+var mongoose = require('mongoose')
+var mongo = require('mongodb');
+var MongoClient = mongo.MongoClient;
 var monk = require('monk');
-var db = monk('localhost:27017/nodetest1');
+// var db = monk('localhost:27017/test');
+var db = null
+var url = 'mongodb://localhost:27017/test'
+MongoClient.connect(url, (err, _db) => {
+  if (err) {
+    console.log('Unable to connect to the mongoDB server. Error:', err);
+  } else {
+    //HURRAY!! We are connected. :)
+    console.log('Connection established to', url);
+
+    // do some work here with the database.
+    db = _db
+  }
+})
+
+mongoose.connect('mongodb://localhost:27017/test')
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var books = require('./routes/books');
+var loans = require('./routes/loans');
 
 var app = express();
 
@@ -26,8 +45,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Make our db accessible to our router
+app.use(function(req, res, next) {
+  req.db = db;
+  next();
+});
+
 app.use('/', routes);
-app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
