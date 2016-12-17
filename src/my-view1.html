@@ -13,25 +13,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="my-view1">
   <template>
-    <style include="shared-styles">
-      :host {
-        display: block;
+  <style include="shared-styles">
+  :host {
+    display: block;
 
-        padding: 10px;
-      }
-    </style>
+    padding: 10px;
+  }
+  </style>
 
-    <div class="card">
-      <div class="circle">1</div>
-      <h1>View One</h1>
-      <p>Ut labores minimum atomorum pro. Laudem tibique ut has.
-      <p>Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Cu mei vide viris gloriatur, at populo eripuit sit.</p>
+  <div class="card">
+    <div class="vertical layout">
+
+      <div><p>First</p></div>
+      <hr>
+
     </div>
-  </template>
+  </div>
+  <div class="card">
+    <div><iron-image style="width:400px; height:400px;" sizing="cover"
+src="http://lorempixel.com/600/400"></iron-image></div>
+</div>
+</template>
 
-  <script>
-    Polymer({
-      is: 'my-view1'
-    });
-  </script>
+<script>
+Polymer({
+  is: 'my-view1'
+});
+</script>
 </dom-module>
